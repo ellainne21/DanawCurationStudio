@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Danaw.App/Danaw.App.csproj" />
+  <Project Path="Danaw.Core/Danaw.Core.csproj" />
+  <Project Path="Danaw.Data/Danaw.Data.csproj" />
+  <Project Path="Danaw.Tests/Danaw.Tests.csproj" />
+</Solution>
