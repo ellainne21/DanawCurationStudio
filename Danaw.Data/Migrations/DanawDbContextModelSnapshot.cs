@@ -163,12 +163,26 @@ namespace Danaw.Data.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT")
+                        .UseCollation("NOCASE");
+
                     b.HasKey("ReviewerId");
+
+                    b.HasIndex("Username")
+                        .IsUnique();
 
                     b.ToTable("Reviewers");
 
@@ -178,28 +192,36 @@ namespace Danaw.Data.Migrations
                             ReviewerId = 1,
                             FullName = "Balindong, S. H.",
                             IsActive = true,
-                            Role = "Researcher"
+                            PasswordHash = "PBKDF2-SHA256$600000$2UXy4/OaNeQ/E/GAwlqR6Q==$9PZUwSjux1HVCXvEPJXr5faj9PMmQA5XmK7KOhJUThE=",
+                            Role = "Researcher",
+                            Username = "balindong"
                         },
                         new
                         {
                             ReviewerId = 2,
                             FullName = "Balofinos, F. S.",
                             IsActive = true,
-                            Role = "Researcher"
+                            PasswordHash = "PBKDF2-SHA256$600000$cD7/3tXHgrGnu1k8GAEx3w==$zGdEYGiU+kztAMVLK/ZHqam+P8TiCLKBC0MiC6st+O0=",
+                            Role = "Researcher",
+                            Username = "balofinos"
                         },
                         new
                         {
                             ReviewerId = 3,
                             FullName = "Cabasag, E. G.",
                             IsActive = true,
-                            Role = "Researcher"
+                            PasswordHash = "PBKDF2-SHA256$600000$+wqDTy9hJHKr+pF/3vfIQw==$u63nzcVZmW3EQnppkikcxfpi9APjZCZ86wrbs5752+8=",
+                            Role = "Researcher",
+                            Username = "cabasag"
                         },
                         new
                         {
                             ReviewerId = 4,
                             FullName = "BCPCH Validator",
                             IsActive = true,
-                            Role = "Validator"
+                            PasswordHash = "PBKDF2-SHA256$600000$dsYFHFp3whEO0fALkA5ZkQ==$lt6/8TDFDpZLLhASa8cRVYNgDV+r3nS6S+3igbYhibU=",
+                            Role = "Validator",
+                            Username = "validator"
                         });
                 });
 

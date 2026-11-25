@@ -16,6 +16,7 @@ public interface IContentItemRepository
 public interface IReviewerRepository
 {
     Task<Reviewer?> GetAsync(int reviewerId);
+    Task<Reviewer?> GetByUsernameAsync(string username);
     Task<IReadOnlyList<Reviewer>> ListActiveAsync();
 }
 

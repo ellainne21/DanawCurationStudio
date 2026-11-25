@@ -35,11 +35,49 @@ public class DanawDbContext : DbContext
             e.Property(x => x.FullName).IsRequired().HasMaxLength(100);
             e.Property(x => x.Role).HasConversion<string>().HasMaxLength(30);
             e.Property(x => x.Email).HasMaxLength(100);
+            e.Property(x => x.Username).IsRequired().HasMaxLength(50).UseCollation("NOCASE");
+            e.Property(x => x.PasswordHash).IsRequired().HasMaxLength(200);
+            e.HasIndex(x => x.Username).IsUnique();
+
+            // DEMO accounts only. Passwords are stored as salted PBKDF2 hashes, never as plain text.
+            // The demo passwords are listed in the README and are for demonstration and testing.
             e.HasData(
-                new Reviewer { ReviewerId = 1, FullName = "Balindong, S. H.", Role = ReviewerRole.Researcher, IsActive = true },
-                new Reviewer { ReviewerId = 2, FullName = "Balofinos, F. S.", Role = ReviewerRole.Researcher, IsActive = true },
-                new Reviewer { ReviewerId = 3, FullName = "Cabasag, E. G.", Role = ReviewerRole.Researcher, IsActive = true },
-                new Reviewer { ReviewerId = 4, FullName = "BCPCH Validator", Role = ReviewerRole.Validator, IsActive = true });
+                new Reviewer
+                {
+                    ReviewerId = 1,
+                    FullName = "Balindong, S. H.",
+                    Role = ReviewerRole.Researcher,
+                    IsActive = true,
+                    Username = "balindong",
+                    PasswordHash = "PBKDF2-SHA256$600000$2UXy4/OaNeQ/E/GAwlqR6Q==$9PZUwSjux1HVCXvEPJXr5faj9PMmQA5XmK7KOhJUThE="
+                },
+                new Reviewer
+                {
+                    ReviewerId = 2,
+                    FullName = "Balofinos, F. S.",
+                    Role = ReviewerRole.Researcher,
+                    IsActive = true,
+                    Username = "balofinos",
+                    PasswordHash = "PBKDF2-SHA256$600000$cD7/3tXHgrGnu1k8GAEx3w==$zGdEYGiU+kztAMVLK/ZHqam+P8TiCLKBC0MiC6st+O0="
+                },
+                new Reviewer
+                {
+                    ReviewerId = 3,
+                    FullName = "Cabasag, E. G.",
+                    Role = ReviewerRole.Researcher,
+                    IsActive = true,
+                    Username = "cabasag",
+                    PasswordHash = "PBKDF2-SHA256$600000$+wqDTy9hJHKr+pF/3vfIQw==$u63nzcVZmW3EQnppkikcxfpi9APjZCZ86wrbs5752+8="
+                },
+                new Reviewer
+                {
+                    ReviewerId = 4,
+                    FullName = "BCPCH Validator",
+                    Role = ReviewerRole.Validator,
+                    IsActive = true,
+                    Username = "validator",
+                    PasswordHash = "PBKDF2-SHA256$600000$dsYFHFp3whEO0fALkA5ZkQ==$lt6/8TDFDpZLLhASa8cRVYNgDV+r3nS6S+3igbYhibU="
+                });
         });
 
         mb.Entity<Source>(e =>

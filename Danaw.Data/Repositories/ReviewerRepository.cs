@@ -13,6 +13,9 @@ public class ReviewerRepository : IReviewerRepository
     public Task<Reviewer?> GetAsync(int reviewerId)
         => _db.Reviewers.FirstOrDefaultAsync(r => r.ReviewerId == reviewerId);
 
+    public Task<Reviewer?> GetByUsernameAsync(string username)
+        => _db.Reviewers.FirstOrDefaultAsync(r => r.Username == username);
+
     public async Task<IReadOnlyList<Reviewer>> ListActiveAsync()
         => await _db.Reviewers
             .Where(r => r.IsActive)

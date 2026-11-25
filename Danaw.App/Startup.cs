@@ -29,6 +29,8 @@ public static class Startup
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddSingleton(TimeProvider.System);
+        services.AddSingleton<IPasswordHasher, PasswordHasher>();
+        services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddScoped<IContentCurationService, ContentCurationService>();
         services.AddScoped<IValidationWorkflowService, ValidationWorkflowService>();
 

@@ -43,5 +43,8 @@ public sealed class TestDb : IDisposable
                new UnitOfWork(ctx),
                TimeProvider.System);
 
+    public AuthenticationService NewAuthenticationService(DanawDbContext ctx)
+        => new(new ReviewerRepository(ctx), new PasswordHasher());
+
     public void Dispose() => _connection.Dispose();
 }
