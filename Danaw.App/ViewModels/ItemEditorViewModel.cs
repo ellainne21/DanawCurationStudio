@@ -73,6 +73,11 @@ public partial class ItemEditorViewModel : ViewModelBase
     [ObservableProperty] private string? _infoMessage;
     [ObservableProperty] private bool _isBusy;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasRevisionNote))]
+    private string? _revisionNote;
+
+    public bool HasRevisionNote => !string.IsNullOrEmpty(RevisionNote);
     public bool HasErrors => ErrorMessages.Count > 0;
     public bool HasNoSources => Sources.Count == 0;
 
@@ -99,6 +104,15 @@ public partial class ItemEditorViewModel : ViewModelBase
                 SelectedCategory = Categories.FirstOrDefault(c => c.CategoryId == item.CategoryId);
                 CulturalDomain = item.CulturalDomain ?? string.Empty;
                 Description = item.Description;
+
+                // If the validator sent this item back, show their latest comment.
+                if (item.Status == ContentStatus.NeedsRevision)
+                {
+                    var records = scope.ServiceProvider.GetRequiredService<IValidationRecordRepository>();
+                    var latest = (await records.ListForItemAsync(item.ContentItemId)).FirstOrDefault();
+                    if (latest is not null)
+                        RevisionNote = $"{latest.Reviewer?.FullName}: {latest.Comments}";
+                }
 
                 foreach (var link in item.Sources)
                 {

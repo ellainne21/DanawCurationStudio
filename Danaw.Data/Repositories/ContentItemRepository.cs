@@ -12,6 +12,8 @@ public class ContentItemRepository : IContentItemRepository
 
     public Task<ContentItem?> GetWithSourcesAsync(int contentItemId)
         => _db.ContentItems
+            .Include(c => c.Category)
+            .Include(c => c.CreatedBy)
             .Include(c => c.Sources).ThenInclude(l => l.Source)
             .FirstOrDefaultAsync(c => c.ContentItemId == contentItemId);
 

@@ -71,65 +71,52 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private async Task AddSampleItemsAsync()
     {
-        if (HasError)
-            return;
-
         if (CurrentUser is null || CurrentUser.Role != ReviewerRole.Researcher)
         {
             StatusMessage = "Select a researcher in the dropdown first, then add sample items.";
             return;
         }
 
-        try
+        using var scope = _scopes.CreateScope();
+        var service = scope.ServiceProvider.GetRequiredService<IContentCurationService>();
+
+        var sources = new[]
         {
-            using var scope = _scopes.CreateScope();
-            var service = scope.ServiceProvider.GetRequiredService<IContentCurationService>();
+            new SourceInput("BCPCH - Meranaw heritage profile, 2023", "Report", "BCPCH", "BCPCH 2023", 2023),
+            new SourceInput("NCCA TALAPAMANA registry entry", "Registry", "NCCA", "Entry #4471", null)
+        };
 
-            var sources = new[]
-            {
-                new SourceInput("BCPCH - Meranaw heritage profile, 2023", "Report", "BCPCH", "BCPCH 2023", 2023),
-                new SourceInput("NCCA TALAPAMANA registry entry", "Registry", "NCCA", "Entry #4471", null)
-            };
-
-            var samples = new (string Title, int CategoryId, bool Submit)[]
-            {
-                ("Okir Motifs", 1, true),
-                ("Inaul Weaving", 2, true),
-                ("Darangen Epic", 3, false)   // saved as a Draft, no sources
-            };
-
-            var created = 0;
-            foreach (var (title, categoryId, submit) in samples)
-            {
-                var input = new ContentItemInput(
-                    null, categoryId, title, "Sample", "Sample description for testing.",
-                    submit ? sources : Array.Empty<SourceInput>());
-
-                var result = submit
-                    ? await service.SubmitAsync(CurrentUser.ReviewerId, input)
-                    : await service.SaveDraftAsync(CurrentUser.ReviewerId, input);
-
-                if (result.Success) created++;
-            }
-
-            StatusMessage = created == samples.Length
-                ? $"Added {created} sample items."
-                : $"Added {created} of {samples.Length} sample items (some were not added, possibly because they already exist).";
-
-            await Queue.RefreshAsync();
-        }
-        catch (Exception ex)
+        var samples = new (string Title, int CategoryId, bool Submit)[]
         {
-            StatusMessage = $"Could not add sample items. Details: {ex.Message}";
+            ("Okir Motifs", 1, true),
+            ("Inaul Weaving", 2, true),
+            ("Darangen Epic", 3, false)   // saved as a Draft, no sources
+        };
+
+        var created = 0;
+        foreach (var (title, categoryId, submit) in samples)
+        {
+            var input = new ContentItemInput(
+                null, categoryId, title, "Sample", "Sample description for testing.",
+                submit ? sources : Array.Empty<SourceInput>());
+
+            var result = submit
+                ? await service.SubmitAsync(CurrentUser.ReviewerId, input)
+                : await service.SaveDraftAsync(CurrentUser.ReviewerId, input);
+
+            if (result.Success) created++;
         }
+
+        StatusMessage = created == samples.Length
+            ? $"Added {created} sample items."
+            : $"Added {created} of {samples.Length} sample items (the others already exist).";
+
+        await Queue.RefreshAsync();
     }
 
     // Checks who may open the editor, then prepares it. Returns null if not allowed.
     public async Task<ItemEditorViewModel?> PrepareEditorAsync(ContentItemRow? row)
     {
-        if (HasError)
-            return null;
-
         if (CurrentUser is null || CurrentUser.Role != ReviewerRole.Researcher)
         {
             StatusMessage = "Select a researcher in the dropdown to create or edit content items.";
@@ -145,5 +132,31 @@ public partial class MainViewModel : ViewModelBase
         var editor = new ItemEditorViewModel(_scopes, CurrentUser, row?.Id);
         await editor.LoadAsync();
         return editor;
+    }
+
+    // Checks who may review, then prepares the validation screen. Returns null if not allowed.
+    public async Task<ValidationViewModel?> PrepareValidationAsync(ContentItemRow? row)
+    {
+        if (CurrentUser is null || CurrentUser.Role != ReviewerRole.Validator)
+        {
+            StatusMessage = "Select the BCPCH validator in the dropdown to review items.";
+            return null;
+        }
+
+        if (row is null)
+        {
+            StatusMessage = "Select an item in the list first.";
+            return null;
+        }
+
+        if (row.Status == ContentStatus.Draft)
+        {
+            StatusMessage = "Drafts have not been submitted yet, so there is nothing to review.";
+            return null;
+        }
+
+        var vm = new ValidationViewModel(_scopes, CurrentUser, row.Id);
+        await vm.LoadAsync();
+        return vm;
     }
 }

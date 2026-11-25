@@ -19,6 +19,27 @@ public partial class MainWindow : Window
     private async void EditItem_Click(object? sender, RoutedEventArgs e)
         => await OpenEditorAsync(forSelected: true);
 
+    private async void ReviewItem_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainViewModel main) return;
+
+        try
+        {
+            var vm = await main.PrepareValidationAsync(main.Queue.SelectedItem);
+            if (vm is null) return;
+
+            var window = new ValidationWindow { DataContext = vm };
+            vm.CloseRequested += decided => window.Close(decided);
+            await window.ShowDialog<bool?>(this);
+
+            await main.Queue.RefreshAsync(); // show the new status
+        }
+        catch (Exception ex)
+        {
+            main.StatusMessage = $"The validation screen could not be opened: {ex.Message}";
+        }
+    }
+
     private async Task OpenEditorAsync(bool forSelected)
     {
         if (DataContext is not MainViewModel main) return;

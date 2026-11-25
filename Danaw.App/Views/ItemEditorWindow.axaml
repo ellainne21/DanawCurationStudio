@@ -33,6 +33,18 @@
     <ScrollViewer>
       <StackPanel Margin="0,0,12,0">
 
+        <!-- Validator's comment, shown when the item was sent back for revision -->
+        <Border IsVisible="{Binding HasRevisionNote}"
+                Background="#FFF4DC" BorderBrush="#D9A441" BorderThickness="1"
+                CornerRadius="4" Padding="14" Margin="0,0,0,12">
+          <StackPanel Spacing="4">
+            <TextBlock Text="Revision requested" FontWeight="Bold" Foreground="#8A6212" />
+            <TextBlock Text="{Binding RevisionNote}" TextWrapping="Wrap" Foreground="#2B1F1B" />
+            <TextBlock Text="Sources are verified again after you resubmit."
+                       FontSize="12" Opacity="0.7" />
+          </StackPanel>
+        </Border>
+
         <TextBlock Classes="label" Text="TITLE" Margin="0,0,0,4" />
         <TextBox Text="{Binding Title}" MaxLength="150" />
 
@@ -72,12 +84,12 @@
                       CornerRadius="4" Padding="10" Margin="0,0,0,8">
                 <StackPanel Spacing="6">
                   <TextBox Text="{Binding Title}" MaxLength="200"
-                           Watermark="Source title, e.g. BCPCH - Meranaw heritage profile, 2023" />
+                           PlaceholderText="Source title, e.g. BCPCH - Meranaw heritage profile, 2023" />
                   <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                     <TextBox Grid.Column="0" Text="{Binding Reference}" MaxLength="150"
-                             Watermark="Reference, e.g. NCCA TALAPAMANA registry entry #4471" />
+                             PlaceholderText="Reference, e.g. NCCA TALAPAMANA registry entry #4471" />
                     <TextBox Grid.Column="1" Text="{Binding Publisher}" MaxLength="100"
-                             Watermark="Publisher (optional)" />
+                             PlaceholderText="Publisher (optional)" />
                   </Grid>
                   <Grid ColumnDefinitions="180,120,*" ColumnSpacing="8">
                     <ComboBox Grid.Column="0" ItemsSource="{Binding TypeOptions}"
@@ -85,7 +97,7 @@
                               HorizontalAlignment="Stretch"
                               PlaceholderText="Source type" />
                     <TextBox Grid.Column="1" Text="{Binding YearText}" MaxLength="4"
-                             Watermark="Year" />
+                             PlaceholderText="Year" />
                     <Button Grid.Column="2" Content="Remove" Command="{Binding RemoveCommand}"
                             HorizontalAlignment="Right" />
                   </Grid>
@@ -120,3 +132,4 @@
     </ScrollViewer>
   </DockPanel>
 </Window>
+

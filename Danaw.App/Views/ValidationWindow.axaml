@@ -1,0 +1,135 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Danaw.App.ViewModels"
+        x:Class="Danaw.App.Views.ValidationWindow"
+        x:DataType="vm:ValidationViewModel"
+        Title="Validation Decision"
+        RequestedThemeVariant="Light"
+        Background="#F3EBE3"
+        WindowStartupLocation="CenterOwner"
+        Width="760" Height="820">
+
+  <Window.Styles>
+    <Style Selector="TextBlock.label">
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="#6B5D54" />
+      <Setter Property="Margin" Value="0,18,0,6" />
+    </Style>
+  </Window.Styles>
+
+  <DockPanel Margin="24">
+
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
+                HorizontalAlignment="Right" Margin="0,16,0,0">
+      <Button Content="Close" Command="{Binding CloseCommand}" />
+    </StackPanel>
+
+    <ScrollViewer>
+      <StackPanel Margin="0,0,12,0">
+
+        <!-- The item -->
+        <TextBlock Text="{Binding Title}" FontSize="22" FontWeight="Bold" Foreground="#2B1F1B"
+                   TextWrapping="Wrap" />
+        <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,8,0,0">
+          <Border Background="{Binding StatusBrush}" CornerRadius="4" Padding="10,4">
+            <TextBlock Text="{Binding StatusText}" Foreground="White" FontSize="12" FontWeight="SemiBold" />
+          </Border>
+          <TextBlock Text="{Binding CategoryName}" VerticalAlignment="Center" Foreground="#6B5D54" />
+          <TextBlock Text="{Binding CulturalDomain}" VerticalAlignment="Center" Foreground="#6B5D54" />
+          <TextBlock Text="{Binding SubmittedBy, StringFormat='Submitted by {0}'}"
+                     VerticalAlignment="Center" Foreground="#6B5D54" />
+        </StackPanel>
+
+        <TextBlock Classes="label" Text="DESCRIPTION" />
+        <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Foreground="#2B1F1B" />
+
+        <!-- Source verification summary (slide 6) -->
+        <TextBlock Classes="label" Text="SOURCE VERIFICATION SUMMARY" />
+        <TextBlock Text="{Binding VerificationSummary}" Foreground="#4A7C59"
+                   FontWeight="SemiBold" Margin="0,0,0,8" />
+
+        <ItemsControl ItemsSource="{Binding Sources}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:SourceCheckViewModel">
+              <Border Background="White" BorderBrush="#D9CFC6" BorderThickness="1"
+                      CornerRadius="4" Padding="12" Margin="0,0,0,8">
+                <StackPanel Spacing="6">
+                  <CheckBox IsChecked="{Binding IsVerified}" IsEnabled="{Binding CanEdit}"
+                            Content="{Binding Title}" FontWeight="SemiBold" />
+                  <TextBlock Text="{Binding Detail}" Foreground="#6B5D54" FontSize="12"
+                             Margin="28,0,0,0" TextWrapping="Wrap" />
+                  <TextBox Text="{Binding Notes}" IsEnabled="{Binding CanEdit}"
+                           PlaceholderText="Cross-check notes (what did you compare this against?)"
+                           AcceptsReturn="True" TextWrapping="Wrap" MinHeight="56" />
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- Shown instead of the decision controls when the item is not Pending -->
+        <Border IsVisible="{Binding IsReadOnly}" Background="#EFE6DC" CornerRadius="4"
+                Padding="14" Margin="0,8,0,0">
+          <TextBlock Text="{Binding ReadOnlyNote}" TextWrapping="Wrap" Foreground="#2B1F1B" />
+        </Border>
+
+        <!-- Decision controls (slide 6: Approve, Request Revision, Reject) -->
+        <StackPanel IsVisible="{Binding CanDecide}">
+          <TextBlock Classes="label" Text="BCPCH VALIDATOR DECISION" />
+          <TextBox Text="{Binding Comments}"
+                   PlaceholderText="Comments (required to request a revision or reject)"
+                   AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80" />
+          <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,12,0,0">
+            <Button Content="Approve" Command="{Binding ApproveCommand}" IsEnabled="{Binding !IsBusy}"
+                    Background="#4A7C59" Foreground="White" />
+            <Button Content="Request Revision" Command="{Binding RequestRevisionCommand}" IsEnabled="{Binding !IsBusy}"
+                    Background="#D9A441" Foreground="#2B1F1B" />
+            <Button Content="Reject" Command="{Binding RejectCommand}" IsEnabled="{Binding !IsBusy}"
+                    Background="#A93A3F" Foreground="White" />
+          </StackPanel>
+        </StackPanel>
+
+        <!-- Error state -->
+        <Border IsVisible="{Binding HasErrors}"
+                Background="#FBE9E7" BorderBrush="#A93A3F" BorderThickness="1"
+                CornerRadius="4" Padding="14" Margin="0,16,0,0">
+          <StackPanel Spacing="4">
+            <TextBlock Text="{Binding ErrorTitle}" FontWeight="Bold" Foreground="#A93A3F" />
+            <ItemsControl ItemsSource="{Binding ErrorMessages}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                  <TextBlock Text="{Binding}" TextWrapping="Wrap" Foreground="#2B1F1B" />
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+
+        <!-- Decision history -->
+        <TextBlock Classes="label" Text="DECISION HISTORY" />
+        <TextBlock IsVisible="{Binding HasNoHistory}" Text="No decisions recorded yet."
+                   Foreground="#6B5D54" FontStyle="Italic" />
+        <ItemsControl ItemsSource="{Binding History}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:DecisionHistoryRow">
+              <Border Background="White" BorderBrush="#D9CFC6" BorderThickness="1"
+                      CornerRadius="4" Padding="12" Margin="0,0,0,8">
+                <StackPanel Spacing="4">
+                  <StackPanel Orientation="Horizontal" Spacing="10">
+                    <TextBlock Text="{Binding DecisionText}" FontWeight="Bold"
+                               Foreground="{Binding DecisionBrush}" />
+                    <TextBlock Text="{Binding Validator}" Foreground="#6B5D54" />
+                    <TextBlock Text="{Binding DecidedText}" Foreground="#6B5D54" />
+                  </StackPanel>
+                  <TextBlock Text="{Binding Comments}" TextWrapping="Wrap" Foreground="#2B1F1B" />
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</Window>
+

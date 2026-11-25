@@ -6,11 +6,11 @@ public interface IContentItemRepository
 {
     Task<ContentItem?> GetWithSourcesAsync(int contentItemId);
     Task<bool> CategoryExistsAsync(int categoryId);
+    Task<IReadOnlyList<Category>> ListCategoriesAsync();
     Task<bool> TitleExistsAsync(int categoryId, string title, int? excludeContentItemId);
     Task AddAsync(ContentItem item);
     Task<IReadOnlyList<ContentItem>> ListAsync(ContentStatus? status, string? titleSearch);
     void RemoveSources(ContentItem item);
-    Task<IReadOnlyList<Category>> ListCategoriesAsync();
 }
 
 public interface IReviewerRepository
