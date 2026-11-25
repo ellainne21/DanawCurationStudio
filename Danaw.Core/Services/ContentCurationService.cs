@@ -77,13 +77,16 @@ public class ContentCurationService : IContentCurationService
             await _items.TitleExistsAsync(input.CategoryId, title, input.ContentItemId))
             errors.Add("An item with this title already exists in the selected category.");
 
-        // Editing an existing item: only Draft or Needs Revision may change.
+        // Editing an existing item: only its creator may change it, and only while
+        // it is a Draft or Needs Revision.
         ContentItem? existing = null;
         if (input.ContentItemId is int id)
         {
             existing = await _items.GetWithSourcesAsync(id);
             if (existing is null)
                 errors.Add("The content item could not be found.");
+            else if (existing.CreatedByReviewerId != reviewerId)
+                errors.Add("Only the researcher who created this item can edit or submit it.");
             else if (existing.Status != ContentStatus.Draft && existing.Status != ContentStatus.NeedsRevision)
                 errors.Add("Only Draft or Needs Revision items can be edited or submitted.");
         }
