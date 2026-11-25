@@ -1,0 +1,134 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Danaw.App.ViewModels"
+        x:Class="Danaw.App.Views.LoginWindow"
+        x:DataType="vm:LoginViewModel"
+        Title="DANAW Curation Studio - Sign in"
+        RequestedThemeVariant="Light"
+        Background="#F3EBE3"
+        WindowStartupLocation="CenterScreen"
+        MinWidth="800" MinHeight="520"
+        Width="1100" Height="640">
+
+  <Window.Styles>
+    <!-- Flat eye button: no border, transparent, subtle hover, hand cursor -->
+    <Style Selector="ToggleButton.eye">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="7" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Focusable" Value="False" />
+      <Setter Property="HorizontalAlignment" Value="Right" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Margin" Value="0,0,6,0" />
+    </Style>
+    <Style Selector="ToggleButton.eye /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="ToggleButton.eye:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#EFE6DC" />
+    </Style>
+    <Style Selector="ToggleButton.eye:checked /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="ToggleButton.eye:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#EFE6DC" />
+    </Style>
+    <Style Selector="ToggleButton.eye:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#E4D9CF" />
+    </Style>
+  </Window.Styles>
+
+  <Grid ColumnDefinitions="*,*">
+
+    <!-- Left: branding panel, same dark brown as the main window sidebar -->
+    <Border Grid.Column="0" Background="#2B1F1B" Padding="56">
+      <StackPanel VerticalAlignment="Center" Spacing="14">
+        <TextBlock Text="DANAW" FontSize="56" FontWeight="Bold" Foreground="#F3EBE3" />
+        <TextBlock Text="Curation Studio" FontSize="24" Foreground="#F3EBE3" Opacity="0.75" />
+
+        <Border Height="3" Width="64" Background="#B85042" HorizontalAlignment="Left"
+                Margin="0,12,0,12" />
+
+        <TextBlock Text="Content curation and validation for the DANAW mobile cultural-heritage application."
+                   FontSize="16" TextWrapping="Wrap" Foreground="#F3EBE3" Opacity="0.7"
+                   MaxWidth="420" />
+        <TextBlock Text="Meranaw, Iranun and Maguindanaon heritage, source-verified and culturally validated."
+                   FontSize="13" TextWrapping="Wrap" Foreground="#F3EBE3" Opacity="0.5"
+                   MaxWidth="420" Margin="0,8,0,0" />
+      </StackPanel>
+    </Border>
+
+    <!-- Right: sign-in form -->
+    <Grid Grid.Column="1">
+      <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                  Width="380" Spacing="6">
+
+        <TextBlock Text="Sign in" FontSize="30" FontWeight="Bold" Foreground="#2B1F1B" />
+        <TextBlock Text="Use your curation account to continue." Foreground="#6B5D54"
+                   Margin="0,0,0,20" />
+
+        <TextBlock Text="USERNAME" FontSize="11" FontWeight="SemiBold" Foreground="#6B5D54" />
+        <TextBox Text="{Binding Username}" MaxLength="50" PlaceholderText="Your username"
+                 FontSize="15" Padding="12,10" />
+
+        <TextBlock Text="PASSWORD" FontSize="11" FontWeight="SemiBold" Foreground="#6B5D54"
+                   Margin="0,12,0,0" />
+
+        <!-- The password field and its eye button share one grid cell.
+             Right padding (46) keeps typed text from running under the icon. -->
+        <Grid>
+          <TextBox Text="{Binding Password}"
+                   PasswordChar="•"
+                   RevealPassword="{Binding ShowPassword}"
+                   MaxLength="100"
+                   PlaceholderText="Your password"
+                   FontSize="15"
+                   Padding="12,10,46,10"
+                   VerticalContentAlignment="Center">
+            <TextBox.KeyBindings>
+              <KeyBinding Gesture="Enter" Command="{Binding SignInCommand}" />
+            </TextBox.KeyBindings>
+          </TextBox>
+
+          <ToggleButton Classes="eye"
+                        IsChecked="{Binding ShowPassword}"
+                        ToolTip.Tip="Show or hide password">
+            <Viewbox Width="18" Height="18">
+              <Canvas Width="24" Height="24">
+                <!-- eye outline -->
+                <Path Data="M2,12 C5,6.5 8.5,5 12,5 C15.5,5 19,6.5 22,12 C19,17.5 15.5,19 12,19 C8.5,19 5,17.5 2,12 Z"
+                      Stroke="#6B5D54" StrokeThickness="1.8"
+                      StrokeLineCap="Round" StrokeJoin="Round" />
+                <!-- pupil -->
+                <Ellipse Canvas.Left="9" Canvas.Top="9" Width="6" Height="6"
+                         Stroke="#6B5D54" StrokeThickness="1.8" />
+                <!-- slash: visible only while the password is hidden -->
+                <Line StartPoint="4,4" EndPoint="20,20"
+                      Stroke="#6B5D54" StrokeThickness="1.8" StrokeLineCap="Round"
+                      IsVisible="{Binding !ShowPassword}" />
+              </Canvas>
+            </Viewbox>
+          </ToggleButton>
+        </Grid>
+
+        <Button Content="Sign in" Command="{Binding SignInCommand}"
+                IsEnabled="{Binding CanSignIn}"
+                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                FontSize="15" FontWeight="SemiBold" Padding="12,12"
+                Background="#B85042" Foreground="White" Margin="0,22,0,0" />
+
+        <Border IsVisible="{Binding HasError}"
+                Background="#FBE9E7" BorderBrush="#A93A3F" BorderThickness="1"
+                CornerRadius="4" Padding="12" Margin="0,12,0,0">
+          <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Foreground="#A93A3F" />
+        </Border>
+
+        <TextBlock Text="{Binding DatabaseMessage}" TextWrapping="Wrap"
+                   FontSize="11" Foreground="#6B5D54" Margin="0,22,0,0" />
+      </StackPanel>
+    </Grid>
+  </Grid>
+</Window>

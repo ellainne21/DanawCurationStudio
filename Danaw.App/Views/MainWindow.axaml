@@ -1,48 +1,163 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Danaw.App.ViewModels"
-        xmlns:ent="using:Danaw.Core.Entities"
         x:Class="Danaw.App.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         RequestedThemeVariant="Light"
         Title="DANAW Curation Studio"
-        Background="#F3EBE3"
-        Width="1100" Height="680">
+        Background="#F6F1EC"
+        WindowStartupLocation="CenterScreen"
+        MinWidth="980" MinHeight="560"
+        Width="1180" Height="660">
 
 	<Window.Styles>
+
+		<!-- Sidebar navigation -->
 		<Style Selector="ListBox.nav">
 			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="Padding" Value="12,0" />
 		</Style>
 		<Style Selector="ListBox.nav ListBoxItem">
-			<Setter Property="Padding" Value="20,14" />
+			<Setter Property="Padding" Value="14,11" />
+			<Setter Property="Margin" Value="0,2" />
+			<Setter Property="CornerRadius" Value="6" />
 		</Style>
 		<Style Selector="ListBox.nav ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-			<Setter Property="Background" Value="#4A3A33" />
+			<Setter Property="Background" Value="#3A2C27" />
 		</Style>
 		<Style Selector="ListBox.nav ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
 			<Setter Property="Background" Value="#B85042" />
 		</Style>
 
-		<!-- Rows in the content list fill the full width so the columns line up with the headers -->
+		<!-- Table rows -->
+		<Style Selector="ListBox.rows">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="Padding" Value="0" />
+		</Style>
 		<Style Selector="ListBox.rows ListBoxItem">
+			<Setter Property="Padding" Value="0" />
 			<Setter Property="HorizontalContentAlignment" Value="Stretch" />
-			<Setter Property="Padding" Value="12,6" />
+		</Style>
+		<Style Selector="ListBox.rows ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="#FBF7F3" />
+		</Style>
+		<Style Selector="ListBox.rows ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="#F8E6E1" />
+		</Style>
+
+		<!-- Buttons -->
+		<Style Selector="Button.primary">
+			<Setter Property="Background" Value="#B85042" />
+			<Setter Property="Foreground" Value="White" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+			<Setter Property="Padding" Value="16,9" />
+			<Setter Property="CornerRadius" Value="6" />
+			<Setter Property="BorderThickness" Value="0" />
+		</Style>
+		<Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="#9E4237" />
+			<Setter Property="Foreground" Value="White" />
+		</Style>
+
+		<Style Selector="Button.success">
+			<Setter Property="Background" Value="#4A7C59" />
+			<Setter Property="Foreground" Value="White" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+			<Setter Property="Padding" Value="16,9" />
+			<Setter Property="CornerRadius" Value="6" />
+			<Setter Property="BorderThickness" Value="0" />
+		</Style>
+		<Style Selector="Button.success:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="#3F6B4D" />
+			<Setter Property="Foreground" Value="White" />
+		</Style>
+
+		<Style Selector="Button.secondary">
+			<Setter Property="Background" Value="White" />
+			<Setter Property="Foreground" Value="#2B1F1B" />
+			<Setter Property="Padding" Value="16,9" />
+			<Setter Property="CornerRadius" Value="6" />
+			<Setter Property="BorderBrush" Value="#D9CFC6" />
+			<Setter Property="BorderThickness" Value="1" />
+		</Style>
+		<Style Selector="Button.secondary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="#F3EBE3" />
+			<Setter Property="BorderBrush" Value="#C9BDB2" />
+			<Setter Property="Foreground" Value="#2B1F1B" />
+		</Style>
+
+		<Style Selector="Button.signout">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="Foreground" Value="#F3EBE3" />
+			<Setter Property="Padding" Value="12,10" />
+			<Setter Property="CornerRadius" Value="6" />
+			<Setter Property="BorderBrush" Value="#5A4A42" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="HorizontalAlignment" Value="Stretch" />
+			<Setter Property="HorizontalContentAlignment" Value="Center" />
+		</Style>
+		<Style Selector="Button.signout:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="#3A2C27" />
+			<Setter Property="BorderBrush" Value="#8A7569" />
+			<Setter Property="Foreground" Value="White" />
+		</Style>
+
+		<!-- Search box -->
+		<Style Selector="TextBox.search">
+			<Setter Property="Background" Value="White" />
+			<Setter Property="Padding" Value="12,9" />
+			<Setter Property="CornerRadius" Value="6" />
+			<Setter Property="BorderBrush" Value="#D9CFC6" />
 		</Style>
 	</Window.Styles>
 
-	<Grid ColumnDefinitions="220,*">
+	<Grid ColumnDefinitions="250,*">
 
-		<!-- Left: dark sidebar (slide 5). Its DataContext is MainViewModel.Queue. -->
-		<Border Grid.Column="0" Background="#2B1F1B"
-				DataContext="{Binding Queue}" x:DataType="vm:ContentQueueViewModel">
+		<!-- ============ LEFT SIDEBAR ============ -->
+		<Border Grid.Column="0" Background="#2B1F1B">
 			<DockPanel>
-				<TextBlock DockPanel.Dock="Top" Text="DANAW"
-						   Foreground="#F3EBE3" FontSize="20" FontWeight="Bold"
-						   Margin="20,24,20,4" />
-				<TextBlock DockPanel.Dock="Top" Text="Curation Studio"
-						   Foreground="#F3EBE3" Opacity="0.6"
-						   Margin="20,0,20,20" />
+
+				<!-- Bottom: signed-in user and Sign out -->
+				<Border DockPanel.Dock="Bottom" Padding="16"
+						BorderBrush="#43342E" BorderThickness="0,1,0,0">
+					<StackPanel Spacing="14">
+						<StackPanel Orientation="Horizontal" Spacing="12">
+							<Border Width="40" Height="40" CornerRadius="20" Background="#B85042">
+								<TextBlock Text="{Binding UserInitial}" Foreground="White"
+										   FontSize="17" FontWeight="Bold"
+										   HorizontalAlignment="Center" VerticalAlignment="Center" />
+							</Border>
+							<StackPanel VerticalAlignment="Center" Spacing="1">
+								<TextBlock Text="{Binding UserName}" Foreground="#F3EBE3"
+										   FontWeight="SemiBold" MaxWidth="150" TextTrimming="CharacterEllipsis" />
+								<TextBlock Text="{Binding RoleText}" Foreground="#F3EBE3"
+										   FontSize="12" Opacity="0.6" />
+							</StackPanel>
+						</StackPanel>
+						<Button Classes="signout" Content="Sign out" Command="{Binding SignOutCommand}" />
+					</StackPanel>
+				</Border>
+
+				<!-- Top: brand -->
+				<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="12"
+							Margin="20,24,20,22">
+					<Border Width="38" Height="38" CornerRadius="8" Background="#B85042">
+						<TextBlock Text="D" Foreground="White" FontSize="20" FontWeight="Bold"
+								   HorizontalAlignment="Center" VerticalAlignment="Center" />
+					</Border>
+					<StackPanel VerticalAlignment="Center">
+						<TextBlock Text="DANAW" Foreground="#F3EBE3" FontSize="18" FontWeight="Bold" />
+						<TextBlock Text="Curation Studio" Foreground="#F3EBE3" FontSize="12" Opacity="0.6" />
+					</StackPanel>
+				</StackPanel>
+
+				<TextBlock DockPanel.Dock="Top" Text="QUEUE" Foreground="#F3EBE3" Opacity="0.45"
+						   FontSize="11" FontWeight="SemiBold" Margin="26,4,20,8" />
+
+				<!-- Middle: status filters. Their DataContext is MainViewModel.Queue. -->
 				<ListBox Classes="nav"
+						 DataContext="{Binding Queue}" x:DataType="vm:ContentQueueViewModel"
 						 ItemsSource="{Binding StatusOptions}"
 						 SelectedItem="{Binding SelectedStatus}">
 					<ListBox.ItemTemplate>
@@ -54,95 +169,101 @@
 			</DockPanel>
 		</Border>
 
-		<!-- Right: user bar, queue, status line -->
-		<DockPanel Grid.Column="1" Margin="20">
+		<!-- ============ MAIN AREA ============ -->
+		<DockPanel Grid.Column="1" Margin="32,26,32,14">
 
-			<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="12">
-				<TextBlock Text="Signed in as:" VerticalAlignment="Center" Foreground="#2B1F1B" />
-				<ComboBox ItemsSource="{Binding Reviewers}"
-						  SelectedItem="{Binding CurrentUser}"
-						  MinWidth="280">
-					<ComboBox.ItemTemplate>
-						<DataTemplate x:DataType="ent:Reviewer">
-							<StackPanel Orientation="Horizontal" Spacing="8">
-								<TextBlock Text="{Binding FullName}" />
-								<TextBlock Text="{Binding Role}" Opacity="0.6" />
-							</StackPanel>
-						</DataTemplate>
-					</ComboBox.ItemTemplate>
-				</ComboBox>
-				<Button Content="+ New Content Item" Click="NewItem_Click"
-						Background="#B85042" Foreground="White" />
-				<Button Content="Edit selected" Click="EditItem_Click" />
-				<Button Content="Review selected" Click="ReviewItem_Click" />
-				<Button Content="Add sample items (debug)"
-						Command="{Binding AddSampleItemsCommand}"
-						IsVisible="{Binding IsDebugBuild}" />
-			</StackPanel>
-
-			<TextBlock DockPanel.Dock="Bottom"
-					   Margin="0,12,0,0"
-					   TextWrapping="Wrap"
-					   Foreground="#2B1F1B"
+			<!-- Footer: status message -->
+			<TextBlock DockPanel.Dock="Bottom" Margin="0,12,0,0"
+					   TextWrapping="Wrap" FontSize="12" Foreground="#6B5D54"
 					   Text="{Binding StatusMessage}" />
 
-			<!-- Content Review Queue -->
-			<Grid RowDefinitions="Auto,Auto,*"
-				  Margin="0,16,0,0"
-				  DataContext="{Binding Queue}"
-				  x:DataType="vm:ContentQueueViewModel">
-
-				<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12">
-					<TextBox Text="{Binding SearchText}"
-							 PlaceholderText="Search content items..."
-							 MinWidth="420" />
-					<Button Content="Refresh" Command="{Binding RefreshCommand}" />
-					<TextBlock Text="{Binding Summary}" VerticalAlignment="Center"
-							   Foreground="#2B1F1B" Opacity="0.7" />
+			<!-- Page header: title on the left, role-based actions on the right -->
+			<Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto">
+				<StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center">
+					<TextBlock Text="Content Review Queue" FontSize="26" FontWeight="Bold" Foreground="#2B1F1B" />
+					<TextBlock Text="{Binding PageSubtitle}" Foreground="#6B5D54" />
 				</StackPanel>
 
-				<!-- Header margin lines the column titles up with the row text below -->
-				<Grid Grid.Row="1" Margin="16,16,16,6" ColumnDefinitions="3*,2*,2*,2*,2*">
-					<TextBlock Grid.Column="0" Text="TITLE" FontSize="11" FontWeight="SemiBold" Foreground="#6B5D54" />
-					<TextBlock Grid.Column="1" Text="CATEGORY" FontSize="11" FontWeight="SemiBold" Foreground="#6B5D54" />
-					<TextBlock Grid.Column="2" Text="STATUS" FontSize="11" FontWeight="SemiBold" Foreground="#6B5D54" />
-					<TextBlock Grid.Column="3" Text="SUBMITTED BY" FontSize="11" FontWeight="SemiBold" Foreground="#6B5D54" />
-					<TextBlock Grid.Column="4" Text="CREATED" FontSize="11" FontWeight="SemiBold" Foreground="#6B5D54" />
-				</Grid>
+				<StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+					<!-- Researcher tools -->
+					<Button Classes="secondary" Content="Edit selected" Click="EditItem_Click"
+							IsVisible="{Binding IsResearcher}" />
+					<Button Classes="primary" Content="+ New Content Item" Click="NewItem_Click"
+							IsVisible="{Binding IsResearcher}" />
 
-				<Grid Grid.Row="2">
-					<ListBox Classes="rows"
-							 ItemsSource="{Binding Items}"
-							 SelectedItem="{Binding SelectedItem}"
-							 Background="Transparent">
-						<ListBox.ItemTemplate>
-							<DataTemplate x:DataType="vm:ContentItemRow">
-								<Grid ColumnDefinitions="3*,2*,2*,2*,2*" Margin="0,4">
-									<TextBlock Grid.Column="0" Text="{Binding Title}"
-											   VerticalAlignment="Center" Foreground="#2B1F1B" />
-									<TextBlock Grid.Column="1" Text="{Binding Category}"
-											   VerticalAlignment="Center" Foreground="#6B5D54" />
-									<Border Grid.Column="2" Background="{Binding BadgeBrush}"
-											CornerRadius="4" Padding="10,4"
-											HorizontalAlignment="Left" VerticalAlignment="Center">
-										<TextBlock Text="{Binding StatusText}" Foreground="White"
-												   FontSize="12" FontWeight="SemiBold" />
+					<!-- Validator tool -->
+					<Button Classes="success" Content="Review selected" Click="ReviewItem_Click"
+							IsVisible="{Binding IsValidator}" />
+
+					<Button Classes="secondary" Content="Add sample items (debug)"
+							Command="{Binding AddSampleItemsCommand}"
+							IsVisible="{Binding ShowSampleButton}" />
+				</StackPanel>
+			</Grid>
+
+			<!-- Toolbar and the list. Their DataContext is MainViewModel.Queue. -->
+			<Grid RowDefinitions="Auto,*" Margin="0,22,0,0"
+				  DataContext="{Binding Queue}" x:DataType="vm:ContentQueueViewModel">
+
+				<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10">
+					<TextBox Classes="search" Text="{Binding SearchText}"
+							 PlaceholderText="Search content items by title..."
+							 Width="380" />
+					<Button Classes="secondary" Content="Refresh" Command="{Binding RefreshCommand}" />
+					<TextBlock Text="{Binding Summary}" VerticalAlignment="Center"
+							   Margin="6,0,0,0" Foreground="#6B5D54" />
+				</StackPanel>
+
+				<!-- The table, drawn as a card -->
+				<Border Grid.Row="1" Margin="0,14,0,0" Background="White"
+						BorderBrush="#E4D9CF" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+					<Grid RowDefinitions="Auto,*">
+
+						<Border Grid.Row="0" Background="#FAF6F2" Padding="16,11"
+								BorderBrush="#E9DFD6" BorderThickness="0,0,0,1">
+							<Grid ColumnDefinitions="3*,2*,2*,2*,2*">
+								<TextBlock Grid.Column="0" Text="TITLE" FontSize="11" FontWeight="SemiBold" Foreground="#6B5D54" />
+								<TextBlock Grid.Column="1" Text="CATEGORY" FontSize="11" FontWeight="SemiBold" Foreground="#6B5D54" />
+								<TextBlock Grid.Column="2" Text="STATUS" FontSize="11" FontWeight="SemiBold" Foreground="#6B5D54" />
+								<TextBlock Grid.Column="3" Text="SUBMITTED BY" FontSize="11" FontWeight="SemiBold" Foreground="#6B5D54" />
+								<TextBlock Grid.Column="4" Text="CREATED" FontSize="11" FontWeight="SemiBold" Foreground="#6B5D54" />
+							</Grid>
+						</Border>
+
+						<ListBox Grid.Row="1" Classes="rows"
+								 ItemsSource="{Binding Items}"
+								 SelectedItem="{Binding SelectedItem}">
+							<ListBox.ItemTemplate>
+								<DataTemplate x:DataType="vm:ContentItemRow">
+									<Border Padding="16,13" BorderBrush="#F0E8E1" BorderThickness="0,0,0,1">
+										<Grid ColumnDefinitions="3*,2*,2*,2*,2*">
+											<TextBlock Grid.Column="0" Text="{Binding Title}"
+													   FontWeight="SemiBold" VerticalAlignment="Center"
+													   Foreground="#2B1F1B" TextTrimming="CharacterEllipsis" />
+											<TextBlock Grid.Column="1" Text="{Binding Category}"
+													   VerticalAlignment="Center" Foreground="#6B5D54" />
+											<Border Grid.Column="2" Background="{Binding BadgeBrush}"
+													CornerRadius="12" Padding="11,3"
+													HorizontalAlignment="Left" VerticalAlignment="Center">
+												<TextBlock Text="{Binding StatusText}" Foreground="White"
+														   FontSize="12" FontWeight="SemiBold" />
+											</Border>
+											<TextBlock Grid.Column="3" Text="{Binding CreatedBy}"
+													   VerticalAlignment="Center" Foreground="#6B5D54" />
+											<TextBlock Grid.Column="4" Text="{Binding CreatedText}"
+													   VerticalAlignment="Center" Foreground="#6B5D54" />
+										</Grid>
 									</Border>
-									<TextBlock Grid.Column="3" Text="{Binding CreatedBy}"
-											   VerticalAlignment="Center" Foreground="#6B5D54" />
-									<TextBlock Grid.Column="4" Text="{Binding CreatedText}"
-											   VerticalAlignment="Center" Foreground="#6B5D54" />
-								</Grid>
-							</DataTemplate>
-						</ListBox.ItemTemplate>
-					</ListBox>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
 
-					<TextBlock Text="No content items match the current filter."
-							   IsVisible="{Binding IsEmpty}"
-							   HorizontalAlignment="Center"
-							   VerticalAlignment="Center"
-							   Foreground="#6B5D54" />
-				</Grid>
+						<TextBlock Grid.Row="1" Text="No content items match the current filter."
+								   IsVisible="{Binding IsEmpty}"
+								   HorizontalAlignment="Center" VerticalAlignment="Center"
+								   Foreground="#6B5D54" />
+					</Grid>
+				</Border>
 			</Grid>
 		</DockPanel>
 	</Grid>

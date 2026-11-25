@@ -13,7 +13,7 @@ public class AuthenticationServiceTests
         using var db = new TestDb();
         using var ctx = db.NewContext();
 
-        var result = await db.NewAuthenticationService(ctx).SignInAsync("balindong", "Balindong-Demo-2026");
+        var result = await db.NewAuthenticationService(ctx).SignInAsync("balindong", "balindong123");
 
         Assert.True(result.Success, string.Join("; ", result.Errors));
         Assert.Equal(1, result.Value!.ReviewerId);
@@ -27,7 +27,7 @@ public class AuthenticationServiceTests
         using var db = new TestDb();
         using var ctx = db.NewContext();
 
-        var result = await db.NewAuthenticationService(ctx).SignInAsync("validator", "BCPCH-Validator-Demo-2026");
+        var result = await db.NewAuthenticationService(ctx).SignInAsync("validator", "validator123");
 
         Assert.True(result.Success, string.Join("; ", result.Errors));
         Assert.Equal(ReviewerRole.Validator, result.Value!.Role);
@@ -61,12 +61,23 @@ public class AuthenticationServiceTests
     }
 
     [Fact]
+    public async Task One_users_password_does_not_work_for_another_user()
+    {
+        using var db = new TestDb();
+        using var ctx = db.NewContext();
+
+        var result = await db.NewAuthenticationService(ctx).SignInAsync("balindong", "cabasag123");
+
+        Assert.False(result.Success);
+    }
+
+    [Fact]
     public async Task Username_is_not_case_sensitive_and_surrounding_spaces_are_ignored()
     {
         using var db = new TestDb();
         using var ctx = db.NewContext();
 
-        var result = await db.NewAuthenticationService(ctx).SignInAsync("  CABASAG ", "Cabasag-Demo-2026");
+        var result = await db.NewAuthenticationService(ctx).SignInAsync("  CABASAG ", "cabasag123");
 
         Assert.True(result.Success, string.Join("; ", result.Errors));
         Assert.Equal(3, result.Value!.ReviewerId);
@@ -85,13 +96,13 @@ public class AuthenticationServiceTests
         }
 
         using var check = db.NewContext();
-        var result = await db.NewAuthenticationService(check).SignInAsync("balofinos", "Balofinos-Demo-2026");
+        var result = await db.NewAuthenticationService(check).SignInAsync("balofinos", "balofinos123");
 
         Assert.False(result.Success);
     }
 
     [Theory]
-    [InlineData("", "Balindong-Demo-2026")]
+    [InlineData("", "balindong123")]
     [InlineData("balindong", "")]
     [InlineData("   ", "   ")]
     public async Task Blank_username_or_password_is_rejected(string username, string password)
@@ -116,7 +127,7 @@ public class AuthenticationServiceTests
         Assert.All(reviewers, r =>
         {
             Assert.StartsWith("PBKDF2-SHA256$", r.PasswordHash);
-            Assert.DoesNotContain("Demo-2026", r.PasswordHash);
+            Assert.DoesNotContain(r.Username + "123", r.PasswordHash);
         });
     }
 

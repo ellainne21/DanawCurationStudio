@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -16,7 +17,8 @@ public record StatusFilterOption(string Label, ContentStatus? Value);
 
 // A flat, display-ready copy of a content item for one row of the list.
 public record ContentItemRow(
-    int Id, string Title, string Category, ContentStatus Status, string CreatedBy, DateTime CreatedAt)
+    int Id, string Title, string Category, ContentStatus Status,
+    int CreatedById, string CreatedBy, DateTime CreatedAt)
 {
     public string StatusText => Status switch
     {
@@ -43,21 +45,27 @@ public record ContentItemRow(
 public partial class ContentQueueViewModel : ViewModelBase
 {
     private readonly IServiceScopeFactory _scopes;
+    private readonly ReviewerRole _role;
     private int _refreshVersion;
 
-    public ContentQueueViewModel(IServiceScopeFactory scopes)
+    public ContentQueueViewModel(IServiceScopeFactory scopes, ReviewerRole role)
     {
         _scopes = scopes;
-        StatusOptions = new List<StatusFilterOption>
-        {
-            new("All Items", null),
-            new("Drafts", ContentStatus.Draft),
-            new("Pending Check", ContentStatus.Pending),
-            new("Needs Revision", ContentStatus.NeedsRevision),
-            new("Validated", ContentStatus.Validated),
-            new("Rejected", ContentStatus.Rejected)
-        };
-        _selectedStatus = StatusOptions[0];
+        _role = role;
+
+        var options = new List<StatusFilterOption> { new("All Items", null) };
+        if (role == ReviewerRole.Researcher)
+            options.Add(new("Drafts", ContentStatus.Draft)); // validators never review unsubmitted work
+        options.Add(new("Pending Check", ContentStatus.Pending));
+        options.Add(new("Needs Revision", ContentStatus.NeedsRevision));
+        options.Add(new("Validated", ContentStatus.Validated));
+        options.Add(new("Rejected", ContentStatus.Rejected));
+        StatusOptions = options;
+
+        // A validator starts on the work that is waiting for them.
+        _selectedStatus = role == ReviewerRole.Validator
+            ? options.First(o => o.Value == ContentStatus.Pending)
+            : options[0];
     }
 
     public IReadOnlyList<StatusFilterOption> StatusOptions { get; }
@@ -91,11 +99,15 @@ public partial class ContentQueueViewModel : ViewModelBase
             Items.Clear();
             foreach (var i in items)
             {
+                if (_role == ReviewerRole.Validator && i.Status == ContentStatus.Draft)
+                    continue;
+
                 Items.Add(new ContentItemRow(
                     i.ContentItemId,
                     i.Title,
                     i.Category?.Name ?? "-",
                     i.Status,
+                    i.CreatedByReviewerId,
                     i.CreatedBy?.FullName ?? "-",
                     i.CreatedAt));
             }

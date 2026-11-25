@@ -1,14 +1,11 @@
+
 using System;
-using System.Collections.ObjectModel;
-using System.IO;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Danaw.Core.Abstractions;
 using Danaw.Core.Entities;
 using Danaw.Core.Models;
-using Danaw.Data;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Danaw.App.ViewModels;
@@ -17,73 +14,62 @@ public partial class MainViewModel : ViewModelBase
 {
     private readonly IServiceScopeFactory _scopes;
 
-    public MainViewModel(IServiceScopeFactory scopes)
+    public MainViewModel(IServiceScopeFactory scopes, Reviewer user)
     {
         _scopes = scopes;
-        Queue = new ContentQueueViewModel(scopes);
+        CurrentUser = user;
+        Queue = new ContentQueueViewModel(scopes, user.Role);
+        StatusMessage = $"Database: {Startup.DatabasePath}";
     }
 
-    public ContentQueueViewModel Queue { get; }
-    public ObservableCollection<Reviewer> Reviewers { get; } = new();
+    // The app listens to this and returns to the sign-in window.
+    public event Action? SignOutRequested;
 
-    [ObservableProperty] private Reviewer? _currentUser;
-    [ObservableProperty] private string _statusMessage = "Starting...";
-    [ObservableProperty] private bool _hasError;
+    // Who is signed in. Set once at sign-in; it cannot be changed from the screen.
+    public Reviewer CurrentUser { get; }
+    public ContentQueueViewModel Queue { get; }
+
+    public bool IsResearcher => CurrentUser.Role == ReviewerRole.Researcher;
+    public bool IsValidator => CurrentUser.Role == ReviewerRole.Validator;
+
+    // Text for the user card in the sidebar and the page header.
+    public string UserName => CurrentUser.FullName;
+    public string RoleText => IsValidator ? "BCPCH Validator" : "Researcher";
+    public string UserInitial => string.IsNullOrWhiteSpace(CurrentUser.FullName)
+        ? "?"
+        : CurrentUser.FullName.Trim()[..1].ToUpperInvariant();
+
+    public string PageSubtitle => IsValidator
+        ? "Verify sources and record validation decisions."
+        : "Create, edit and submit content items with verified sources.";
+
+    [ObservableProperty] private string _statusMessage = string.Empty;
 
     // The sample-data button is shown only in Debug builds, never in the published app.
 #if DEBUG
-    public bool IsDebugBuild => true;
+    public bool ShowSampleButton => IsResearcher;
 #else
-    public bool IsDebugBuild => false;
+    public bool ShowSampleButton => false;
 #endif
 
-    public async Task InitializeAsync()
-    {
-        try
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(Startup.DatabasePath)!);
+    public Task InitializeAsync() => Queue.RefreshAsync();
 
-            // A new scope gives this operation its own fresh DbContext.
-            using var scope = _scopes.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<DanawDbContext>();
-            await db.Database.MigrateAsync(); // creates or upgrades the database, never wipes data
-
-            var reviewers = scope.ServiceProvider.GetRequiredService<IReviewerRepository>();
-            foreach (var r in await reviewers.ListActiveAsync())
-                Reviewers.Add(r);
-
-            CurrentUser = Reviewers.Count > 0 ? Reviewers[0] : null;
-            StatusMessage = $"Ready. Database: {Startup.DatabasePath}";
-        }
-        catch (Exception ex)
-        {
-            HasError = true;
-            StatusMessage = "The database could not be opened, so the application cannot continue. "
-                          + $"Check that this location is available and writable: {Startup.DatabasePath}. "
-                          + $"Details: {ex.Message}";
-            return;
-        }
-
-        await Queue.RefreshAsync();
-    }
+    [RelayCommand]
+    private void SignOut() => SignOutRequested?.Invoke();
 
     // Debug helper: creates three items through the real Workflow 1 service.
     [RelayCommand]
     private async Task AddSampleItemsAsync()
     {
-        if (CurrentUser is null || CurrentUser.Role != ReviewerRole.Researcher)
-        {
-            StatusMessage = "Select a researcher in the dropdown first, then add sample items.";
-            return;
-        }
+        if (!IsResearcher) return;
 
         using var scope = _scopes.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<IContentCurationService>();
 
         var sources = new[]
         {
-            new SourceInput("BCPCH - Meranaw heritage profile, 2023", "Report", "BCPCH", "BCPCH 2023", 2023),
-            new SourceInput("NCCA TALAPAMANA registry entry", "Registry", "NCCA", "Entry #4471", null)
+            new SourceInput("BCPCH - Meranaw heritage profile, 2023", "Institutional", "BCPCH", "BCPCH 2023", 2023),
+            new SourceInput("NCCA TALAPAMANA registry entry", "Institutional", "NCCA", "Entry #4471", null)
         };
 
         var samples = new (string Title, int CategoryId, bool Submit)[]
@@ -117,16 +103,25 @@ public partial class MainViewModel : ViewModelBase
     // Checks who may open the editor, then prepares it. Returns null if not allowed.
     public async Task<ItemEditorViewModel?> PrepareEditorAsync(ContentItemRow? row)
     {
-        if (CurrentUser is null || CurrentUser.Role != ReviewerRole.Researcher)
+        if (!IsResearcher)
         {
-            StatusMessage = "Select a researcher in the dropdown to create or edit content items.";
+            StatusMessage = "Only researchers can create or edit content items.";
             return null;
         }
 
-        if (row is not null && row.Status is not (ContentStatus.Draft or ContentStatus.NeedsRevision))
+        if (row is not null)
         {
-            StatusMessage = "Only Draft or Needs Revision items can be edited.";
-            return null;
+            if (row.CreatedById != CurrentUser.ReviewerId)
+            {
+                StatusMessage = "You can only edit items that you created.";
+                return null;
+            }
+
+            if (row.Status is not (ContentStatus.Draft or ContentStatus.NeedsRevision))
+            {
+                StatusMessage = "Only Draft or Needs Revision items can be edited.";
+                return null;
+            }
         }
 
         var editor = new ItemEditorViewModel(_scopes, CurrentUser, row?.Id);
@@ -137,9 +132,9 @@ public partial class MainViewModel : ViewModelBase
     // Checks who may review, then prepares the validation screen. Returns null if not allowed.
     public async Task<ValidationViewModel?> PrepareValidationAsync(ContentItemRow? row)
     {
-        if (CurrentUser is null || CurrentUser.Role != ReviewerRole.Validator)
+        if (!IsValidator)
         {
-            StatusMessage = "Select the BCPCH validator in the dropdown to review items.";
+            StatusMessage = "Only the BCPCH validator can review items.";
             return null;
         }
 

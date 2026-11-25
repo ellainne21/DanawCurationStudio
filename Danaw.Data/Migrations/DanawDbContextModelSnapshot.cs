@@ -192,7 +192,7 @@ namespace Danaw.Data.Migrations
                             ReviewerId = 1,
                             FullName = "Balindong, S. H.",
                             IsActive = true,
-                            PasswordHash = "PBKDF2-SHA256$600000$2UXy4/OaNeQ/E/GAwlqR6Q==$9PZUwSjux1HVCXvEPJXr5faj9PMmQA5XmK7KOhJUThE=",
+                            PasswordHash = "PBKDF2-SHA256$600000$Yx8fqvAhckUhuguzM3+1cA==$LZeoBUy9ho89yRHc46sBAUMgky/LsaNlu16kTkPTGXY=",
                             Role = "Researcher",
                             Username = "balindong"
                         },
@@ -201,7 +201,7 @@ namespace Danaw.Data.Migrations
                             ReviewerId = 2,
                             FullName = "Balofinos, F. S.",
                             IsActive = true,
-                            PasswordHash = "PBKDF2-SHA256$600000$cD7/3tXHgrGnu1k8GAEx3w==$zGdEYGiU+kztAMVLK/ZHqam+P8TiCLKBC0MiC6st+O0=",
+                            PasswordHash = "PBKDF2-SHA256$600000$yUs4zzD7MRVOlTWQZkU9zQ==$yfjn/zhez6erRallXMzkNUvIcgPwoKyJ9uJIpG2evNc=",
                             Role = "Researcher",
                             Username = "balofinos"
                         },
@@ -210,7 +210,7 @@ namespace Danaw.Data.Migrations
                             ReviewerId = 3,
                             FullName = "Cabasag, E. G.",
                             IsActive = true,
-                            PasswordHash = "PBKDF2-SHA256$600000$+wqDTy9hJHKr+pF/3vfIQw==$u63nzcVZmW3EQnppkikcxfpi9APjZCZ86wrbs5752+8=",
+                            PasswordHash = "PBKDF2-SHA256$600000$cpGMZ/PJJqFTBGXQo34q5A==$Fww7lMadnYKsmivaFt+iG1M+Aiv2+Mag72rlvRMaTDw=",
                             Role = "Researcher",
                             Username = "cabasag"
                         },
@@ -219,7 +219,7 @@ namespace Danaw.Data.Migrations
                             ReviewerId = 4,
                             FullName = "BCPCH Validator",
                             IsActive = true,
-                            PasswordHash = "PBKDF2-SHA256$600000$dsYFHFp3whEO0fALkA5ZkQ==$lt6/8TDFDpZLLhASa8cRVYNgDV+r3nS6S+3igbYhibU=",
+                            PasswordHash = "PBKDF2-SHA256$600000$PvhdP/mHm28+UeqD50XUpA==$fWUTiC8aX92dNXeJPHN7aYh2QMTnad+FuLj2jl0jIUk=",
                             Role = "Validator",
                             Username = "validator"
                         });
