@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Danaw.Core.Abstractions;
@@ -10,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Danaw.App.ViewModels;
 
-// One entry in the status dropdown. A null Value means "show every status".
+// One entry in the sidebar. A null Value means "show every status".
 public record StatusFilterOption(string Label, ContentStatus? Value);
 
 // A flat, display-ready copy of a content item for one row of the list.
@@ -20,9 +21,20 @@ public record ContentItemRow(
     public string StatusText => Status switch
     {
         ContentStatus.Pending => "Pending",
-        ContentStatus.NeedsRevision => "Needs revision",
+        ContentStatus.NeedsRevision => "Needs rev.",
         _ => Status.ToString()
     };
+
+    // Badge colors follow the midterm mockup (slides 5 and 6).
+    public IBrush BadgeBrush => new SolidColorBrush(Color.Parse(Status switch
+    {
+        ContentStatus.Draft => "#6B5D54",
+        ContentStatus.Pending => "#B85042",
+        ContentStatus.NeedsRevision => "#D9A441",
+        ContentStatus.Validated => "#4A7C59",
+        ContentStatus.Rejected => "#A93A3F",
+        _ => "#6B5D54"
+    }));
 
     // Dates are stored in UTC; show them in the user's local time.
     public string CreatedText => CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
@@ -38,10 +50,10 @@ public partial class ContentQueueViewModel : ViewModelBase
         _scopes = scopes;
         StatusOptions = new List<StatusFilterOption>
         {
-            new("All statuses", null),
-            new("Draft", ContentStatus.Draft),
-            new("Pending", ContentStatus.Pending),
-            new("Needs revision", ContentStatus.NeedsRevision),
+            new("All Items", null),
+            new("Drafts", ContentStatus.Draft),
+            new("Pending Check", ContentStatus.Pending),
+            new("Needs Revision", ContentStatus.NeedsRevision),
             new("Validated", ContentStatus.Validated),
             new("Rejected", ContentStatus.Rejected)
         };
