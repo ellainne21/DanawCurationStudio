@@ -18,6 +18,9 @@ public class ContentItemRepository : IContentItemRepository
     public Task<bool> CategoryExistsAsync(int categoryId)
         => _db.Categories.AnyAsync(c => c.CategoryId == categoryId);
 
+    public async Task<IReadOnlyList<Category>> ListCategoriesAsync()
+        => await _db.Categories.OrderBy(c => c.Name).ToListAsync();
+
     // The Title column uses NOCASE collation, so this comparison ignores case.
     public Task<bool> TitleExistsAsync(int categoryId, string title, int? excludeContentItemId)
         => _db.ContentItems.AnyAsync(c =>

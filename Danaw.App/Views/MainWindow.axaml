@@ -24,6 +24,9 @@
 					</DataTemplate>
 				</ComboBox.ItemTemplate>
 			</ComboBox>
+			<Button Content="+ New Content Item" Click="NewItem_Click"
+					Background="#B85042" Foreground="White" />
+			<Button Content="Edit selected" Click="EditItem_Click" />
 			<Button Content="Add sample items (debug)"
 					Command="{Binding AddSampleItemsCommand}"
 					IsVisible="{Binding IsDebugBuild}" />

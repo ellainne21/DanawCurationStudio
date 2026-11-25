@@ -1,0 +1,122 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Danaw.App.ViewModels"
+        xmlns:ent="using:Danaw.Core.Entities"
+        x:Class="Danaw.App.Views.ItemEditorWindow"
+        x:DataType="vm:ItemEditorViewModel"
+        Title="{Binding WindowTitle}"
+        RequestedThemeVariant="Light"
+        Background="#F3EBE3"
+        WindowStartupLocation="CenterOwner"
+        Width="720" Height="780">
+
+  <Window.Styles>
+    <Style Selector="TextBlock.label">
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="#6B5D54" />
+      <Setter Property="Margin" Value="0,14,0,4" />
+    </Style>
+  </Window.Styles>
+
+  <DockPanel Margin="24">
+
+    <!-- Buttons (slide 5: Save Draft, Submit) -->
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
+                HorizontalAlignment="Right" Spacing="10" Margin="0,16,0,0">
+      <Button Content="Cancel" Command="{Binding CancelCommand}" IsEnabled="{Binding !IsBusy}" />
+      <Button Content="Save Draft" Command="{Binding SaveDraftCommand}" IsEnabled="{Binding !IsBusy}" />
+      <Button Content="Submit" Command="{Binding SubmitCommand}" IsEnabled="{Binding !IsBusy}"
+              Background="#B85042" Foreground="White" />
+    </StackPanel>
+
+    <ScrollViewer>
+      <StackPanel Margin="0,0,12,0">
+
+        <TextBlock Classes="label" Text="TITLE" Margin="0,0,0,4" />
+        <TextBox Text="{Binding Title}" MaxLength="150" />
+
+        <TextBlock Classes="label" Text="CATEGORY" />
+        <ComboBox ItemsSource="{Binding Categories}"
+                  SelectedItem="{Binding SelectedCategory}"
+                  HorizontalAlignment="Stretch"
+                  PlaceholderText="Select a category">
+          <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="ent:Category">
+              <TextBlock Text="{Binding Name}" />
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+
+        <TextBlock Classes="label" Text="CULTURAL DOMAIN" />
+        <TextBox Text="{Binding CulturalDomain}" MaxLength="30" />
+
+        <TextBlock Classes="label" Text="DESCRIPTION" />
+        <TextBox Text="{Binding Description}"
+                 AcceptsReturn="True" TextWrapping="Wrap"
+                 MinHeight="110" />
+
+        <TextBlock Classes="label" Text="SOURCE CITATIONS" />
+
+        <!-- Shown when every source row has been removed (slide 6) -->
+        <Border IsVisible="{Binding HasNoSources}"
+                BorderBrush="#A93A3F" BorderThickness="1" CornerRadius="4"
+                Background="White" Padding="12" Margin="0,0,0,8">
+          <TextBlock Text="No sources attached yet" FontStyle="Italic" Foreground="#6B5D54" />
+        </Border>
+
+        <ItemsControl ItemsSource="{Binding Sources}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:SourceEntryViewModel">
+              <Border Background="White" BorderBrush="#D9CFC6" BorderThickness="1"
+                      CornerRadius="4" Padding="10" Margin="0,0,0,8">
+                <StackPanel Spacing="6">
+                  <TextBox Text="{Binding Title}" MaxLength="200"
+                           Watermark="Source title, e.g. BCPCH - Meranaw heritage profile, 2023" />
+                  <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                    <TextBox Grid.Column="0" Text="{Binding Reference}" MaxLength="150"
+                             Watermark="Reference, e.g. NCCA TALAPAMANA registry entry #4471" />
+                    <TextBox Grid.Column="1" Text="{Binding Publisher}" MaxLength="100"
+                             Watermark="Publisher (optional)" />
+                  </Grid>
+                  <Grid ColumnDefinitions="180,120,*" ColumnSpacing="8">
+                    <ComboBox Grid.Column="0" ItemsSource="{Binding TypeOptions}"
+                              SelectedItem="{Binding SourceType}"
+                              HorizontalAlignment="Stretch"
+                              PlaceholderText="Source type" />
+                    <TextBox Grid.Column="1" Text="{Binding YearText}" MaxLength="4"
+                             Watermark="Year" />
+                    <Button Grid.Column="2" Content="Remove" Command="{Binding RemoveCommand}"
+                            HorizontalAlignment="Right" />
+                  </Grid>
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <Button Content="+ Add Source" Command="{Binding AddSourceCommand}"
+                HorizontalAlignment="Left" Margin="0,4,0,0" />
+
+        <!-- Validation error state (slide 6, right) -->
+        <Border IsVisible="{Binding HasErrors}"
+                Background="#FBE9E7" BorderBrush="#A93A3F" BorderThickness="1"
+                CornerRadius="4" Padding="14" Margin="0,16,0,0">
+          <StackPanel Spacing="4">
+            <TextBlock Text="{Binding ErrorTitle}" FontWeight="Bold" Foreground="#A93A3F" />
+            <ItemsControl ItemsSource="{Binding ErrorMessages}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                  <TextBlock Text="{Binding}" TextWrapping="Wrap" Foreground="#2B1F1B" />
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+
+        <TextBlock Text="{Binding InfoMessage}" Foreground="#4A7C59"
+                   FontWeight="SemiBold" Margin="0,12,0,0" />
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</Window>

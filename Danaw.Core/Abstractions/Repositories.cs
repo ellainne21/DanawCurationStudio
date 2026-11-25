@@ -10,6 +10,7 @@ public interface IContentItemRepository
     Task AddAsync(ContentItem item);
     Task<IReadOnlyList<ContentItem>> ListAsync(ContentStatus? status, string? titleSearch);
     void RemoveSources(ContentItem item);
+    Task<IReadOnlyList<Category>> ListCategoriesAsync();
 }
 
 public interface IReviewerRepository
