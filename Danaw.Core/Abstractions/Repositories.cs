@@ -17,6 +17,12 @@ public interface IReviewerRepository
     Task<Reviewer?> GetAsync(int reviewerId);
 }
 
+public interface IValidationRecordRepository
+{
+    Task AddAsync(ValidationRecord record);
+    Task<IReadOnlyList<ValidationRecord>> ListForItemAsync(int contentItemId);
+}
+
 public interface IUnitOfWork
 {
     Task SaveChangesAsync();

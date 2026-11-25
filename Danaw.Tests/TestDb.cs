@@ -34,5 +34,12 @@ public sealed class TestDb : IDisposable
                new UnitOfWork(ctx),
                TimeProvider.System);
 
+    public ValidationWorkflowService NewValidationService(DanawDbContext ctx)
+    => new(new ContentItemRepository(ctx),
+           new ReviewerRepository(ctx),
+           new ValidationRecordRepository(ctx),
+           new UnitOfWork(ctx),
+           TimeProvider.System);
+
     public void Dispose() => _connection.Dispose();
 }
