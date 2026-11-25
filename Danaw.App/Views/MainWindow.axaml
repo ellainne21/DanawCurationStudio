@@ -9,6 +9,7 @@
 
 	<DockPanel Margin="16">
 
+		<!-- Top bar: who is using the app -->
 		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="12">
 			<TextBlock Text="Signed in as:" VerticalAlignment="Center" />
 			<ComboBox ItemsSource="{Binding Reviewers}"
@@ -23,16 +24,73 @@
 					</DataTemplate>
 				</ComboBox.ItemTemplate>
 			</ComboBox>
+			<Button Content="Add sample items (debug)"
+					Command="{Binding AddSampleItemsCommand}"
+					IsVisible="{Binding IsDebugBuild}" />
 		</StackPanel>
 
+		<!-- Bottom line: status messages -->
 		<TextBlock DockPanel.Dock="Bottom"
 				   Margin="0,12,0,0"
 				   TextWrapping="Wrap"
 				   Text="{Binding StatusMessage}" />
 
-		<TextBlock Text="The Content Review Queue will appear here."
-				   HorizontalAlignment="Center"
-				   VerticalAlignment="Center"
-				   Opacity="0.6" />
+		<!-- The Content Review Queue. Its DataContext is MainViewModel.Queue. -->
+		<Grid RowDefinitions="Auto,Auto,*"
+			  Margin="0,16,0,0"
+			  DataContext="{Binding Queue}"
+			  x:DataType="vm:ContentQueueViewModel">
+
+			<!-- Row 0: filter, search, refresh -->
+			<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12">
+				<ComboBox ItemsSource="{Binding StatusOptions}"
+						  SelectedItem="{Binding SelectedStatus}"
+						  MinWidth="180">
+					<ComboBox.ItemTemplate>
+						<DataTemplate x:DataType="vm:StatusFilterOption">
+							<TextBlock Text="{Binding Label}" />
+						</DataTemplate>
+					</ComboBox.ItemTemplate>
+				</ComboBox>
+				<TextBox Text="{Binding SearchText}"
+						 Watermark="Search content items by title..."
+						 MinWidth="320" />
+				<Button Content="Refresh" Command="{Binding RefreshCommand}" />
+				<TextBlock Text="{Binding Summary}" VerticalAlignment="Center" Opacity="0.7" />
+			</StackPanel>
+
+			<!-- Row 1: column headers -->
+			<Grid Grid.Row="1" Margin="12,16,12,4" ColumnDefinitions="3*,2*,2*,2*,2*">
+				<TextBlock Grid.Column="0" Text="Title" FontWeight="SemiBold" />
+				<TextBlock Grid.Column="1" Text="Category" FontWeight="SemiBold" />
+				<TextBlock Grid.Column="2" Text="Status" FontWeight="SemiBold" />
+				<TextBlock Grid.Column="3" Text="Submitted by" FontWeight="SemiBold" />
+				<TextBlock Grid.Column="4" Text="Created" FontWeight="SemiBold" />
+			</Grid>
+
+			<!-- Row 2: the list, with an empty-state message on top of it -->
+			<Grid Grid.Row="2">
+				<ListBox ItemsSource="{Binding Items}"
+						 SelectedItem="{Binding SelectedItem}">
+					<ListBox.ItemTemplate>
+						<DataTemplate x:DataType="vm:ContentItemRow">
+							<Grid ColumnDefinitions="3*,2*,2*,2*,2*">
+								<TextBlock Grid.Column="0" Text="{Binding Title}" />
+								<TextBlock Grid.Column="1" Text="{Binding Category}" />
+								<TextBlock Grid.Column="2" Text="{Binding StatusText}" />
+								<TextBlock Grid.Column="3" Text="{Binding CreatedBy}" />
+								<TextBlock Grid.Column="4" Text="{Binding CreatedText}" />
+							</Grid>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+
+				<TextBlock Text="No content items match the current filter."
+						   IsVisible="{Binding IsEmpty}"
+						   HorizontalAlignment="Center"
+						   VerticalAlignment="Center"
+						   Opacity="0.6" />
+			</Grid>
+		</Grid>
 	</DockPanel>
 </Window>

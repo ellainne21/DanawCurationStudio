@@ -3,8 +3,10 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Danaw.Core.Abstractions;
 using Danaw.Core.Entities;
+using Danaw.Core.Models;
 using Danaw.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,13 +20,22 @@ public partial class MainViewModel : ViewModelBase
     public MainViewModel(IServiceScopeFactory scopes)
     {
         _scopes = scopes;
+        Queue = new ContentQueueViewModel(scopes);
     }
 
+    public ContentQueueViewModel Queue { get; }
     public ObservableCollection<Reviewer> Reviewers { get; } = new();
 
     [ObservableProperty] private Reviewer? _currentUser;
     [ObservableProperty] private string _statusMessage = "Starting...";
     [ObservableProperty] private bool _hasError;
+
+    // The sample-data button is shown only in Debug builds, never in the published app.
+#if DEBUG
+    public bool IsDebugBuild => true;
+#else
+    public bool IsDebugBuild => false;
+#endif
 
     public async Task InitializeAsync()
     {
@@ -50,6 +61,56 @@ public partial class MainViewModel : ViewModelBase
             StatusMessage = "The database could not be opened, so the application cannot continue. "
                           + $"Check that this location is available and writable: {Startup.DatabasePath}. "
                           + $"Details: {ex.Message}";
+            return;
         }
+
+        await Queue.RefreshAsync();
+    }
+
+    // Debug helper: creates three items through the real Workflow 1 service.
+    [RelayCommand]
+    private async Task AddSampleItemsAsync()
+    {
+        if (CurrentUser is null || CurrentUser.Role != ReviewerRole.Researcher)
+        {
+            StatusMessage = "Select a researcher in the dropdown first, then add sample items.";
+            return;
+        }
+
+        using var scope = _scopes.CreateScope();
+        var service = scope.ServiceProvider.GetRequiredService<IContentCurationService>();
+
+        var sources = new[]
+        {
+            new SourceInput("BCPCH - Meranaw heritage profile, 2023", "Report", "BCPCH", "BCPCH 2023", 2023),
+            new SourceInput("NCCA TALAPAMANA registry entry", "Registry", "NCCA", "Entry #4471", null)
+        };
+
+        var samples = new (string Title, int CategoryId, bool Submit)[]
+        {
+            ("Okir Motifs", 1, true),
+            ("Inaul Weaving", 2, true),
+            ("Darangen Epic", 3, false)   // saved as a Draft, no sources
+        };
+
+        var created = 0;
+        foreach (var (title, categoryId, submit) in samples)
+        {
+            var input = new ContentItemInput(
+                null, categoryId, title, "Sample", "Sample description for testing.",
+                submit ? sources : Array.Empty<SourceInput>());
+
+            var result = submit
+                ? await service.SubmitAsync(CurrentUser.ReviewerId, input)
+                : await service.SaveDraftAsync(CurrentUser.ReviewerId, input);
+
+            if (result.Success) created++;
+        }
+
+        StatusMessage = created == samples.Length
+            ? $"Added {created} sample items."
+            : $"Added {created} of {samples.Length} sample items (the others already exist).";
+
+        await Queue.RefreshAsync();
     }
 }
