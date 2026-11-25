@@ -117,7 +117,18 @@ public class ValidationWorkflowService : IValidationWorkflowService
 
         // ONE save: EF Core wraps the source checks, the status change and the
         // new record in a single transaction. All of it commits, or none of it.
-        await _uow.SaveChangesAsync();
+        try
+        {
+            await _uow.SaveChangesAsync();
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // The database rolled the whole transaction back. Report it honestly
+            // instead of letting the UI show a success that never happened.
+            return OperationResult.Fail(
+                "The decision could not be saved because of a database problem. " +
+                "No changes were made. Please try again.");
+        }
 
         return OperationResult.Ok();
     }

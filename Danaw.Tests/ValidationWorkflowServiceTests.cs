@@ -97,6 +97,44 @@ public class ValidationWorkflowServiceTests
         });
     }
 
+    // Scenario 6: a failure partway through the decision rolls everything back
+    [Fact]
+    public async Task Failure_in_the_middle_of_a_decision_rolls_back_everything()
+    {
+        using var db = new TestDb();
+        var (itemId, ids) = await CreatePendingItemAsync(db);
+
+        // Fail when EF tries to insert the validation record, after other statements ran.
+        var fault = new FailOnCommandInterceptor("INSERT INTO \"ValidationRecords\"");
+
+        using (var ctx = db.NewContext(fault))
+        {
+            var result = await db.NewValidationService(ctx).RecordDecisionAsync(ValidatorId,
+                new DecisionInput(itemId, ValidationDecision.Approved, "Sources check out.",
+                                  Checks(ids, true, true)));
+
+            Assert.False(result.Success); // the failure is reported, not hidden
+            Assert.Contains(result.Errors, e => e.Contains("could not be saved", StringComparison.OrdinalIgnoreCase));
+        }
+
+        // Prove the test is meaningful: the fault fired, and earlier UPDATEs had already run.
+        Assert.True(fault.Triggered);
+        Assert.Contains(fault.ExecutedBeforeFailure, sql => sql.Contains("UPDATE", StringComparison.OrdinalIgnoreCase));
+
+        // Fresh context: what does the database really contain?
+        using var check = db.NewContext();
+        var item = await check.ContentItems.Include(c => c.Sources).SingleAsync(c => c.ContentItemId == itemId);
+
+        Assert.Equal(ContentStatus.Pending, item.Status);
+        Assert.Equal(0, await check.ValidationRecords.CountAsync());
+        Assert.All(item.Sources, l =>
+        {
+            Assert.False(l.IsVerified);
+            Assert.Null(l.VerifiedAt);
+            Assert.Null(l.CrossCheckNotes);
+        });
+    }
+
     // Scenario 7: a second decision on an already-decided item is refused
     [Fact]
     public async Task Second_decision_on_an_already_decided_item_is_rejected()

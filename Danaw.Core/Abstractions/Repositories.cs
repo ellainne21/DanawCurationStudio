@@ -15,6 +15,7 @@ public interface IContentItemRepository
 public interface IReviewerRepository
 {
     Task<Reviewer?> GetAsync(int reviewerId);
+    Task<IReadOnlyList<Reviewer>> ListActiveAsync();
 }
 
 public interface IValidationRecordRepository

@@ -1,22 +1,38 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Danaw.App.ViewModels"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        xmlns:ent="using:Danaw.Core.Entities"
         x:Class="Danaw.App.Views.MainWindow"
         x:DataType="vm:MainViewModel"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="Danaw.App">
+        Title="DANAW Curation Studio"
+        Width="1000" Height="650">
 
-    <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainViewModel />
-    </Design.DataContext>
+	<DockPanel Margin="16">
 
-    <TextBox Text="{Binding Greeting}"
-             HorizontalAlignment="Center"
-             VerticalAlignment="Center" />
+		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="12">
+			<TextBlock Text="Signed in as:" VerticalAlignment="Center" />
+			<ComboBox ItemsSource="{Binding Reviewers}"
+					  SelectedItem="{Binding CurrentUser}"
+					  MinWidth="280">
+				<ComboBox.ItemTemplate>
+					<DataTemplate x:DataType="ent:Reviewer">
+						<StackPanel Orientation="Horizontal" Spacing="8">
+							<TextBlock Text="{Binding FullName}" />
+							<TextBlock Text="{Binding Role}" Opacity="0.6" />
+						</StackPanel>
+					</DataTemplate>
+				</ComboBox.ItemTemplate>
+			</ComboBox>
+		</StackPanel>
 
+		<TextBlock DockPanel.Dock="Bottom"
+				   Margin="0,12,0,0"
+				   TextWrapping="Wrap"
+				   Text="{Binding StatusMessage}" />
+
+		<TextBlock Text="The Content Review Queue will appear here."
+				   HorizontalAlignment="Center"
+				   VerticalAlignment="Center"
+				   Opacity="0.6" />
+	</DockPanel>
 </Window>

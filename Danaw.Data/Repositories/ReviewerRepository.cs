@@ -12,4 +12,10 @@ public class ReviewerRepository : IReviewerRepository
 
     public Task<Reviewer?> GetAsync(int reviewerId)
         => _db.Reviewers.FirstOrDefaultAsync(r => r.ReviewerId == reviewerId);
+
+    public async Task<IReadOnlyList<Reviewer>> ListActiveAsync()
+        => await _db.Reviewers
+            .Where(r => r.IsActive)
+            .OrderBy(r => r.ReviewerId)
+            .ToListAsync();
 }

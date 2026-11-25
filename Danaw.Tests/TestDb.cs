@@ -3,6 +3,7 @@ using Danaw.Data;
 using Danaw.Data.Repositories;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Danaw.Tests;
 
@@ -11,22 +12,23 @@ namespace Danaw.Tests;
 public sealed class TestDb : IDisposable
 {
     private readonly SqliteConnection _connection;
-    private readonly DbContextOptions<DanawDbContext> _options;
 
     public TestDb()
     {
         _connection = new SqliteConnection("DataSource=:memory:");
         _connection.Open(); // the in-memory database lives only while this stays open
 
-        _options = new DbContextOptionsBuilder<DanawDbContext>()
-            .UseSqlite(_connection)
-            .Options;
-
         using var ctx = NewContext();
         ctx.Database.Migrate();
     }
 
-    public DanawDbContext NewContext() => new(_options);
+    // Optional interceptors let a test inject a fault into one context only.
+    public DanawDbContext NewContext(params IInterceptor[] interceptors)
+    {
+        var builder = new DbContextOptionsBuilder<DanawDbContext>().UseSqlite(_connection);
+        if (interceptors.Length > 0) builder.AddInterceptors(interceptors);
+        return new DanawDbContext(builder.Options);
+    }
 
     public ContentCurationService NewCurationService(DanawDbContext ctx)
         => new(new ContentItemRepository(ctx),
@@ -35,11 +37,11 @@ public sealed class TestDb : IDisposable
                TimeProvider.System);
 
     public ValidationWorkflowService NewValidationService(DanawDbContext ctx)
-    => new(new ContentItemRepository(ctx),
-           new ReviewerRepository(ctx),
-           new ValidationRecordRepository(ctx),
-           new UnitOfWork(ctx),
-           TimeProvider.System);
+        => new(new ContentItemRepository(ctx),
+               new ReviewerRepository(ctx),
+               new ValidationRecordRepository(ctx),
+               new UnitOfWork(ctx),
+               TimeProvider.System);
 
     public void Dispose() => _connection.Dispose();
 }
